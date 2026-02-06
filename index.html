@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>黄金每日复盘 - 卖方研报</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>黄金每日复盘</h1>
+            <p class="subtitle">COMEX黄金期货技术分析报告</p>
+            <div class="update-time">更新时间: <span id="updateTime">--</span></div>
+        </header>
+
+        <main class="main-content">
+            <!-- 价格看板 -->
+            <section class="price-board">
+                <div class="price-main">
+                    <div class="price-label">最新价</div>
+                    <div class="price-value" id="currentPrice">--</div>
+                    <div class="price-unit">美元/盎司</div>
+                </div>
+                <div class="price-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">涨跌</span>
+                        <span class="stat-value" id="priceChange">--</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">涨跌幅</span>
+                        <span class="stat-value" id="priceChangePct">--</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">开盘</span>
+                        <span class="stat-value" id="openPrice">--</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">最高</span>
+                        <span class="stat-value" id="highPrice">--</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">最低</span>
+                        <span class="stat-value" id="lowPrice">--</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">成交量</span>
+                        <span class="stat-value" id="volume">--</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 置信度评分 -->
+            <section class="confidence-section">
+                <h2>置信度评分</h2>
+                <div class="confidence-bar">
+                    <div class="confidence-fill" id="confidenceFill"></div>
+                    <div class="confidence-score" id="confidenceScore">--</div>
+                </div>
+            </section>
+
+            <!-- 晨会级摘要 -->
+            <section class="report-section">
+                <h2>一、核心观点摘要</h2>
+                <div class="content-box" id="summary">--</div>
+            </section>
+
+            <!-- 趋势判断 -->
+            <section class="report-section">
+                <h2>二、趋势判断</h2>
+                <div class="trend-grid">
+                    <div class="trend-item">
+                        <span class="trend-label">整体趋势</span>
+                        <span class="trend-value" id="trend">--</span>
+                    </div>
+                    <div class="trend-item">
+                        <span class="trend-label">均线形态</span>
+                        <span class="trend-value" id="maTrend">--</span>
+                    </div>
+                    <div class="trend-item">
+                        <span class="trend-label">RSI状态</span>
+                        <span class="trend-value" id="rsiSignal">--</span>
+                    </div>
+                    <div class="trend-item">
+                        <span class="trend-label">MACD状态</span>
+                        <span class="trend-value" id="macdSignal">--</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 技术指标 -->
+            <section class="report-section">
+                <h2>三、技术指标证据</h2>
+                <div class="indicator-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>指标</th>
+                                <th>数值</th>
+                                <th>指标</th>
+                                <th>数值</th>
+                            </tr>
+                        </thead>
+                        <tbody id="indicatorTable">
+                            <!-- 动态填充 -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="content-box" id="evidence">--</div>
+            </section>
+
+            <!-- 每日点评 -->
+            <section class="report-section">
+                <h2>四、每日盘面点评</h2>
+                <div class="content-box" id="commentary">--</div>
+            </section>
+
+            <!-- 今日vs昨日 -->
+            <section class="report-section">
+                <h2>五、今日vs昨日复盘对比</h2>
+                <div class="content-box" id="comparison">--</div>
+            </section>
+
+            <!-- 近5日趋势 -->
+            <section class="report-section">
+                <h2>六、近五日趋势叙事</h2>
+                <div class="content-box" id="narrative5d">--</div>
+                <div class="historical-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>日期</th>
+                                <th>收盘价</th>
+                                <th>涨跌幅</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historical5dTable">
+                            <!-- 动态填充 -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 失效条件 -->
+            <section class="report-section">
+                <h2>七、判断失效条件</h2>
+                <div class="content-box warning-box" id="invalidation">--</div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <p>数据来源: Yahoo Finance (COMEX黄金期货 GC=F)</p>
+            <p>本报告仅供参考，不构成投资建议</p>
+        </footer>
+    </div>
+
+    <script>
+        // 加载JSON数据
+        async function loadData() {
+            try {
+                const response = await fetch('data.json');
+                const data = await response.json();
+                renderReport(data);
+            } catch (error) {
+                console.error('加载数据失败:', error);
+                document.querySelector('.container').innerHTML = 
+                    '<div style="text-align:center;padding:50px;"><h2>数据加载失败</h2><p>请稍后再试</p></div>';
+            }
+        }
+
+        // 渲染报告
+        function renderReport(data) {
+            // 更新时间
+            document.getElementById('updateTime').textContent = data.update_time;
+
+            // 价格信息
+            document.getElementById('currentPrice').textContent = data.price.current.toFixed(2);
+            
+            const changeElem = document.getElementById('priceChange');
+            const changePctElem = document.getElementById('priceChangePct');
+            const change = data.price.change;
+            const changePct = data.price.change_pct;
+            
+            changeElem.textContent = (change >= 0 ? '+' : '') + change.toFixed(2);
+            changePctElem.textContent = (changePct >= 0 ? '+' : '') + changePct.toFixed(2) + '%';
+            
+            // 设置涨跌颜色
+            const changeClass = change >= 0 ? 'positive' : 'negative';
+            changeElem.className = 'stat-value ' + changeClass;
+            changePctElem.className = 'stat-value ' + changeClass;
+            
+            document.getElementById('openPrice').textContent = data.price.open.toFixed(2);
+            document.getElementById('highPrice').textContent = data.price.high.toFixed(2);
+            document.getElementById('lowPrice').textContent = data.price.low.toFixed(2);
+            document.getElementById('volume').textContent = data.price.volume.toLocaleString();
+
+            // 置信度评分
+            const confidence = data.analysis.confidence_score;
+            document.getElementById('confidenceScore').textContent = confidence + '分';
+            document.getElementById('confidenceFill').style.width = confidence + '%';
+            
+            // 设置置信度颜色
+            const confidenceFill = document.getElementById('confidenceFill');
+            if (confidence >= 70) {
+                confidenceFill.style.backgroundColor = '#27ae60';
+            } else if (confidence >= 50) {
+                confidenceFill.style.backgroundColor = '#f39c12';
+            } else {
+                confidenceFill.style.backgroundColor = '#e74c3c';
+            }
+
+            // 分析内容
+            document.getElementById('summary').innerHTML = data.analysis.summary.replace(/\n/g, '<br>');
+            document.getElementById('trend').textContent = data.analysis.trend;
+            document.getElementById('maTrend').textContent = data.analysis.ma_trend;
+            document.getElementById('rsiSignal').textContent = data.analysis.rsi_signal;
+            document.getElementById('macdSignal').textContent = data.analysis.macd_signal;
+            
+            document.getElementById('evidence').innerHTML = data.analysis.evidence.replace(/\n/g, '<br>');
+            document.getElementById('commentary').innerHTML = data.analysis.commentary.replace(/\n/g, '<br>');
+            document.getElementById('comparison').innerHTML = data.analysis.comparison.replace(/\n/g, '<br>');
+            document.getElementById('narrative5d').innerHTML = data.analysis.narrative_5d.replace(/\n/g, '<br>');
+            document.getElementById('invalidation').innerHTML = data.analysis.invalidation.replace(/\n/g, '<br>');
+
+            // 技术指标表格
+            const indicators = data.indicators;
+            const indicatorTable = document.getElementById('indicatorTable');
+            indicatorTable.innerHTML = `
+                <tr>
+                    <td>MA5</td>
+                    <td>${indicators.MA5.toFixed(2)}</td>
+                    <td>MA10</td>
+                    <td>${indicators.MA10.toFixed(2)}</td>
+                </tr>
+                <tr>
+                    <td>MA20</td>
+                    <td>${indicators.MA20.toFixed(2)}</td>
+                    <td>MA60</td>
+                    <td>${indicators.MA60.toFixed(2)}</td>
+                </tr>
+                <tr>
+                    <td>RSI14</td>
+                    <td>${indicators.RSI14.toFixed(2)}</td>
+                    <td>ATR14</td>
+                    <td>${indicators.ATR14.toFixed(2)}</td>
+                </tr>
+                <tr>
+                    <td>MACD</td>
+                    <td>${indicators.MACD.toFixed(2)}</td>
+                    <td>信号线</td>
+                    <td>${indicators.MACD_Signal.toFixed(2)}</td>
+                </tr>
+                <tr>
+                    <td>MACD柱</td>
+                    <td>${indicators.MACD_Histogram.toFixed(2)}</td>
+                    <td>20日波动率</td>
+                    <td>${indicators.Volatility_20d.toFixed(2)}%</td>
+                </tr>
+                <tr>
+                    <td>支撑位</td>
+                    <td>${indicators.support.toFixed(2)}</td>
+                    <td>阻力位</td>
+                    <td>${indicators.resistance.toFixed(2)}</td>
+                </tr>
+            `;
+
+            // 近5日历史表格
+            const historical5dTable = document.getElementById('historical5dTable');
+            historical5dTable.innerHTML = data.historical_5d.map(item => {
+                const changeClass = item.change_pct >= 0 ? 'positive' : 'negative';
+                return `
+                    <tr>
+                        <td>${item.date}</td>
+                        <td>${item.close.toFixed(2)}</td>
+                        <td class="${changeClass}">${(item.change_pct >= 0 ? '+' : '') + item.change_pct.toFixed(2)}%</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // 页面加载时获取数据
+        document.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+</html>
